@@ -17,7 +17,7 @@ clc; close all; clear;
 addpath('./functions') % Add path to the folder with auxiliary functions
 addpath('./data')      % Add path to the folder with stored data
 rng(5678);             % Set random seed for reproducibility
-source_file = 'experiment1.mat';
+source_file = './data/experiment1.mat';
 if isfile(source_file)
     load(source_file);
     plot_empirical_violation_probability;
@@ -31,7 +31,7 @@ clc; close all; clear;
 addpath('./functions') % Add path to the folder with auxiliary functions
 addpath('./data')      % Add path to the folder with stored data
 rng(1910);             % Set random seed for reproducibility
-source_file = 'experiment2.mat';
+source_file = './data/experiment2.mat';
 if isfile(source_file)
     load(source_file);
     compare_cost_upper_bound;

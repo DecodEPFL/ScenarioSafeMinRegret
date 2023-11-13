@@ -21,6 +21,7 @@ dataset{18} = load('data_T20_N2000_kc_0p8_1p2_double_integrator.mat');
 
 validation_samples = 10000;
 violations = zeros(size(dataset));
+violations_dr = zeros(size(dataset));
 for i = 1:validation_samples
     % Sample a new uncertainty realization
     theta = [0.2; 0.2].*(2*rand() - 1);
@@ -32,28 +33,47 @@ for i = 1:validation_samples
     qf_cost_psi = [(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*psi); psi]'*opt.C*[(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*psi); psi];
     % For each robust control policy...
     for j = 1:size(dataset, 2)
-        qf_cost_reg = [(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg_robust); dataset{j}.Phi_u_reg_robust]'*opt.C*[(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg_robust); dataset{j}.Phi_u_reg_robust];
+        % Solution without restricting the number of optimization variables
+        qf_cost_reg = [(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg); dataset{j}.Phi_u_reg]'*opt.C*[(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg); dataset{j}.Phi_u_reg];
         qf_reg_reg = qf_cost_reg - qf_cost_psi;
-        
-        if norm(qf_reg_reg, 2) > dataset{j}.objective_reg_robust
+        if norm(qf_reg_reg, 2) > dataset{j}.obj_reg
             violations(j) = violations(j) + 1;
+        end
+        % Solution with diagonally-restricted closed-loop map 
+        qf_cost_reg_dr = [(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg_dr); dataset{j}.Phi_u_reg_dr]'*opt.C*[(sls.I - sls.Z*Ai)\(sls.I + sls.Z*Bi*dataset{j}.Phi_u_reg_dr); dataset{j}.Phi_u_reg_dr];
+        qf_reg_reg_dr = qf_cost_reg_dr - qf_cost_psi;
+        if norm(qf_reg_reg_dr, 2) > dataset{j}.obj_reg_dr
+            violations_dr(j) = violations_dr(j) + 1;
         end
     end
 end
 
 opt.beta = 0.1;
-opt.delta = 1 +(sys.m*(opt.T-1)*(2*sys.n + sys.n*(opt.T-2)))/2;
+opt.delta = 1 + sys.n*sys.m*opt.T*(opt.T-1)/2;
+opt.delta_dr = 1 + sys.n*sys.m*(opt.T-1);
 
 epsilons = [];
+epsilons_dr = [];
+
 for j = 15:size(dataset, 2)
     epsilons(j - 14) = 2/dataset{j}.opt.N*(opt.delta + log10(1/opt.beta));
 end
+for j = 6:size(dataset, 2)
+    epsilons_dr(j - 5) = 2/dataset{j}.opt.N*(opt.delta_dr + log10(1/opt.beta));
+end
+
 
 N = [];
-R = [];
-H = [];
+R = []; R_dr = [];
+H = []; H_dr = [];
+solver_time = [];
+solver_time_dr = [];
 for j = 1:size(dataset, 2)
     N = [N, dataset{j}.opt.N];
-    R = [R, dataset{j}.objective_reg_robust];
-    H = [H, dataset{j}.objective_inf_robust];
+    R = [R, dataset{j}.obj_reg];
+    H = [H, dataset{j}.obj_inf];
+    solver_time = [solver_time, dataset{j}.sol_reg.solvertime];
+    R_dr = [R_dr, dataset{j}.obj_reg_dr];
+    H_dr = [H_dr, dataset{j}.obj_inf_dr];
+    solver_time_dr = [solver_time_dr, dataset{j}.sol_reg_dr.solvertime]; 
 end

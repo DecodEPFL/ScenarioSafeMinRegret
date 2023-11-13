@@ -9,8 +9,8 @@ for i = 2:5
     plot(1:considered_dynamics, cost_psi_uniform(i, :)', 'o', 'Color', [0.8500 0.3250 0.0980], 'MarkerFaceColor', [0.8500 0.3250 0.0980], 'HandleVisibility','off')
 end
 plot(1:considered_dynamics, cost_psi_ramp', 'o', 'Color', [0.9290 0.6940 0.1250], 'MarkerFaceColor', [0.9290 0.6940 0.1250])
-plot(1:considered_dynamics, cost_psi_stairs', 'o', 'Color', [0.4660 0.6740 0.1880], 'MarkerFaceColor', [0.4660 0.6740 0.1880])
 plot(1:considered_dynamics, cost_psi_constant', 'o', 'Color', [0.4940 0.1840 0.5560], 'MarkerFaceColor', [0.4940 0.1840 0.5560])
+plot(1:considered_dynamics, cost_psi_stairs', 'o', 'Color', [0.4660 0.6740 0.1880], 'MarkerFaceColor', [0.4660 0.6740 0.1880])
 plot(1:considered_dynamics, cost_psi_worst - 3, 'o', 'Color', [0.3010 0.7450 0.9330], 'MarkerFaceColor', [0.3010 0.7450 0.9330])
 
 fill([1:considered_dynamics, fliplr(1:considered_dynamics)], [zeros(1, considered_dynamics), HR'], 'g', 'FaceAlpha', 0.03, 'LineStyle', 'none', 'HandleVisibility','off')
